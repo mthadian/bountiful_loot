@@ -1,9 +1,13 @@
 package com.interv.bobthief;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +26,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @RestController
 public class Logic 
 {
+	private static final Logger logger = LoggerFactory.getLogger(Logic.class);
+	String newline = System.lineSeparator();
+	ObjectMapper objectMapper = new ObjectMapper(); 
 
 	@GetMapping("/api/loot")
 	public ResponseEntity<?> findMaximumValue(@RequestBody List<JsonNode> list_Loot) throws Exception
@@ -33,6 +40,7 @@ public class Logic
 			List<List<JsonNode>> list_CombinationsW0LessThan10=new ArrayList<List<JsonNode>>();
 			List<JsonNode> maxValueLoot=new ArrayList<JsonNode>();
 			ObjectMapper objectMapper = new ObjectMapper(); 
+			logger.info("Input-->  "+list_Loot.toString());
 		
 			//Generate all the possible combinations in the list 
 		    for ( long i = 1; i < Math.pow(2, list_Loot.size()); i++ ) 
@@ -111,20 +119,7 @@ public class Logic
 		    			 maxValueLoot=list_jsonNodeCompare;
 		    			
 		    		 }
-		    		/*
-		    		 else if(finalTotalValueCompare==finalTotalValue)
-		    		 {
-		    			 if(finalTotalWeightCompare<finalTotalWeight)
-		    			 {
-		    				 maxValueLoot=list_jsonNodeCompare;
-		    			 }
-		    			 else 
-		    			 {
-		    				 maxValueLoot=list_JsonNodes;
-						}
-		    			 
-		    		 }
-		    		 */
+		    		
 		    		 
 		    	 }
 		    
@@ -140,11 +135,19 @@ public class Logic
 		    jsonFinalOutput.putPOJO("bobsLoot",maxValueLoot);
 		    
 		    System.out.println(jsonFinalOutput);
+		    logger.info("output"+jsonFinalOutput.toPrettyString());
+		    
 			return new ResponseEntity<>(jsonFinalOutput,HttpStatus.OK);
 			
 		} catch (Exception e) 
 		{
-			return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String exceptionAsString = sw.toString();
+            
+            logger.error(exceptionAsString,newline);
+			return new ResponseEntity<>(exceptionAsString,HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }
